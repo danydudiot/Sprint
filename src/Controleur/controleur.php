@@ -40,11 +40,11 @@ function ctlLogin($username, $password){
     $BDPWD = modGetPassword($username);
     if (password_verify($password, $BDPWD)){
         $resultConnect = modGetEmployeFromLogin($username);
-        $_SESSION["idEmploye"] = $resultConnect->IDEMPLOYE;
+        $_SESSION["idEmploye"] = $resultConnect->idemploye;
         $_SESSION["login"] = $username;
-        $_SESSION["type"] = $resultConnect->IDCATEGORIE;
-        $_SESSION["name"] = $resultConnect->NOM;
-        $_SESSION["firstName"] = $resultConnect->PRENOM;
+        $_SESSION["type"] = $resultConnect->idcategorie;
+        $_SESSION["name"] = $resultConnect->nom;
+        $_SESSION["firstName"] = $resultConnect->prenom;
         $_SESSION["listClient"] = modGetAllClients();
         ctlHome();
     }
@@ -162,7 +162,7 @@ function ctlGetTypeAccount(){
     $listTypeAccount = modGetAllAccountTypes();
     $list = array();
     foreach ($listTypeAccount as $typeAccount){
-        array_push($list, $typeAccount->NOM);
+        array_push($list, $typeAccount->nom);
     }
     return $list;
 }
@@ -205,7 +205,7 @@ function ctlGetTypeContract(){
     $listTypeContract = modGetAllContractTypes();
     $list = array();
     foreach ($listTypeContract as $typeContract){
-        array_push($list, $typeContract->NOM);
+        array_push($list, $typeContract->nom);
     }
     return $list;
 }
@@ -256,7 +256,7 @@ function ctlGetOperation($idClient){
     $accounts=modGetAccounts($idClient);
     $array = array();
     foreach ($accounts as $account){
-        $array["$account->idCompte"]=(modGetOperations($account->idCompte));
+        $array["$account->idcompte"]=(modGetOperations($account->idcompte));
     }
     return $array;
 }
@@ -563,16 +563,16 @@ function ctlGestionPersonnelAddSubmit($name, $firstName, $login, $password, $cat
  */
 function ctlGestionPersonnelDelete($idEmployee){
     $info = modGetEmployeFromId($idEmployee);
-    if ($info->IDCATEGORIE == 1 && count(modGetAllDirectors()) == 1){ // Si c'est le dernier directeur
+    if ($info->idcategorie == 1 && count(modGetAllDirectors()) == 1){ // Si c'est le dernier directeur
         throw new deleteDirecteurException();
     }
-    if ($info->IDCATEGORIE == 2 && count(modGetAllClientsByCounselors($idEmployee)) != 0 && count(modGetAllCounselors()) == 1){ // Si le conseiller a des clients et qu'il est le dernier conseiller
+    if ($info->idcategorie == 2 && count(modGetAllClientsByCounselors($idEmployee)) != 0 && count(modGetAllCounselors()) == 1){ // Si le conseiller a des clients et qu'il est le dernier conseiller
         $director = modGetAllDirectors()[0]->idEmploye;
         foreach (modGetAllClientsByCounselors($idEmployee) as $client){
-            modModifClient($client->IDCLIENT, $director, $client->PROFESSION, $client->SITUATIONFAMILIALE, $client->ADRESSE, $client->NUMTEL, $client->EMAIL, $client->DATENAISSANCE);
+            modModifClient($client->idclient, $director, $client->profession, $client->situationfamiliale, $client->adresse, $client->numtel, $client->email, $client->datenaissance);
         }
     }
-    if ($info->IDCATEGORIE == 2 && count(modGetAllClientsByCounselors($idEmployee)) != 0 && count(modGetAllCounselors()) != 1){ // Si le conseiller a des clients et qu'il n'est pas le dernier conseiller
+    if ($info->idcategorie == 2 && count(modGetAllClientsByCounselors($idEmployee)) != 0 && count(modGetAllCounselors()) != 1){ // Si le conseiller a des clients et qu'il n'est pas le dernier conseiller
         $counselors = modGetAllCounselors();
         foreach ($counselors as $counselor){
             if ($counselor->idEmploye != $idEmployee){
@@ -581,7 +581,7 @@ function ctlGestionPersonnelDelete($idEmployee){
             }
         }
         foreach (modGetAllClientsByCounselors($idEmployee) as $client){
-            modModifClient($client->IDCLIENT, $counselors, $client->PROFESSION, $client->SITUATIONFAMILIALE, $client->ADRESSE, $client->NUMTEL, $client->EMAIL, $client->DATENAISSANCE);
+            modModifClient($client->idclient, $counselors, $client->profession, $client->situationfamiliale, $client->adresse, $client->numtel, $client->email, $client->datenaissance);
         }
     }       
     modDeleteEmploye($idEmployee);
@@ -638,7 +638,7 @@ function ctlRDVBetween($dateStartOfWeek, $dateEndOfWeek){
 
     $event = array_merge($listRDV, $listTA);
     usort($event, function($a, $b) {
-        return $a->HORAIREDEBUT > $b->HORAIREDEBUT;
+        return strtotime($a->horairedebut) - strtotime($b->horairedebut);
     });
 
     $array = new ArrayObject();
@@ -767,24 +767,24 @@ function ctlCreateNewAppointment($idClient, $idEmployee, $date, $heureDebut, $he
     $listAppointment = modGetAppointmentsBetweenCounselor($idEmployee,$debutCall,$finCall);
     $listTA = modGetTABetweenCounselor($idEmployee,$debutCall,$finCall);
     foreach ($listAppointment as $appointment){
-        if ($horaireDebut < $appointment->HORAIREDEBUT && $appointment->HORAIREDEBUT < $horaireFin){
+        if ($horaireDebut < $appointment->horairedebut && $appointment->horairedebut < $horaireFin){
             throw new appointmentHoraireException();
         }
         if ($horaireDebut < $appointment->HORAIREFIN && $appointment->HORAIREFIN < $horaireFin){
             throw new appointmentHoraireException();
         }
-        if ($horaireDebut >= $appointment->HORAIREDEBUT && $horaireFin <= $appointment->HORAIREFIN){
+        if ($horaireDebut >= $appointment->horairedebut && $horaireFin <= $appointment->HORAIREFIN){
             throw new appointmentHoraireException();
         }
     }
     foreach ($listTA as $TA){
-        if ($horaireDebut < $TA->HORAIREDEBUT && $TA->HORAIREDEBUT < $horaireFin){
+        if ($horaireDebut < $TA->horairedebut && $TA->horairedebut < $horaireFin){
             throw new appointmentHoraireException();
         }
         if ($horaireDebut < $TA->HORAIREFIN && $TA->HORAIREFIN < $horaireFin){
             throw new appointmentHoraireException();
         }
-        if ($horaireDebut >= $TA->HORAIREDEBUT && $horaireFin <= $TA->HORAIREFIN){
+        if ($horaireDebut >= $TA->horairedebut && $horaireFin <= $TA->HORAIREFIN){
             throw new appointmentHoraireException();
         }
     }
@@ -830,24 +830,24 @@ function ctlCreateNewTA($idEmployee, $date, $heureDebut, $heureFin, $libelle) {
     $listAppointment = modGetAppointmentsBetweenCounselor($idEmployee,$debutCall,$finCall);
     $listTA = modGetTABetweenCounselor($idEmployee,$debutCall,$finCall);
     foreach ($listAppointment as $appointment){
-        if ($horaireDebut < $appointment->HORAIREDEBUT && $appointment->HORAIREDEBUT < $horaireFin){
+        if ($horaireDebut < $appointment->horairedebut && $appointment->horairedebut < $horaireFin){
             throw new TAHoraireException();
         }
         if ($horaireDebut < $appointment->HORAIREFIN && $appointment->HORAIREFIN < $horaireFin){
             throw new TAHoraireException();
         }
-        if ($horaireDebut >= $appointment->HORAIREDEBUT && $horaireFin <= $appointment->HORAIREFIN){
+        if ($horaireDebut >= $appointment->horairedebut && $horaireFin <= $appointment->HORAIREFIN){
             throw new TAHoraireException();
         }
     }
     foreach ($listTA as $TA){
-        if ($horaireDebut < $TA->HORAIREDEBUT && $TA->HORAIREDEBUT < $horaireFin){
+        if ($horaireDebut < $TA->horairedebut && $TA->horairedebut < $horaireFin){
             throw new TAHoraireException();
         }
         if ($horaireDebut < $TA->HORAIREFIN && $TA->HORAIREFIN < $horaireFin){
             throw new TAHoraireException();
         }
-        if ($horaireDebut >= $TA->HORAIREDEBUT && $horaireFin <= $TA->HORAIREFIN){
+        if ($horaireDebut >= $TA->horairedebut && $horaireFin <= $TA->HORAIREFIN){
             throw new TAHoraireException();
         }
     }
@@ -938,114 +938,3 @@ function ctlStatsDisplay($dateStart="", $dateEnd="", $date=""){
 function debug($element = "debugString") {
     echo("<script>console.log(". json_encode($element) .")</script>");
 }
-
-
-
-
-/*
-POUBELLE
-
-function ctlCalendarConseiller($loginEmploye="GayBoi"){
-    $appointment = modGetAppointmentConseiller($loginEmploye);
-    $rdv = new ArrayObject();
-    foreach ($appointment as $event) {
-        $thisRDV = new ArrayObject();
-        $thisRDV->append(modGetIntituleMotif($event->idMotif));
-        $infoClient = modGetClientFromId($event->idClient);
-        $thisRDV->append($infoClient->NOM);
-        $thisRDV->append($infoClient->PRENOM);
-        $thisRDV->append($infoClient->CIVILITEE);
-        $employe = modGetEmployeFromId($event->IDEMPLOYE);
-        $thisRDV->append($employe->PRENOM);
-        $date = new DateTime($event->date);
-        $thisRDV->append($date->format('Y/m/d'));
-        $thisRDV->append($date->format('H:i'));
-
-
-    }
-    $admin = modGetAdminConseiller($loginEmploye);
-    vueDisplayAgendaConseiller($appointment, $admin);
-}
-
-function ctlGetIntituleCategorie($idCategorie){
-    $intitule = modGetIntituleCategorie($idCategorie);
-    return $intitule;
-}
-
-
-function ctlGestionPersonnelOne($idEmploye){
-    $employee = modGetEmployeFromId($idEmploye);
-    vueDisplayGestionPersonnelOne($employee);
-}
-
-
-function ctlGestionAccountOne($idAccount){
-    $account = modGetTypeAccount($idAccount);
-    vueDisplayGestionAccountOne($account);
-}
-
-
-
-function ctlGestionContractOne($idContract){
-    $contract = modGetContractFromId($idContract);
-    vueDisplayGestionContractOne($contract);
-}
-
-
-
-
-function ctlLogin ($username, $password) {
-    if ($username == '' || $password == '') {
-        throw new isEmptyException();
-    }
-    $resultConnnect = modConnect($username, $password);
-    if (empty($resultConnnect)){
-        throw new incorrectLoginException();
-    }
-    else{
-        $_SESSION["idEmploye"] = $resultConnnect->IDEMPLOYE;
-        $_SESSION["type"] = $resultConnnect->IDCATEGORIE;
-        $_SESSION["name"] = $resultConnnect->NOM;
-        $_SESSION["firstName"] = $resultConnnect->PRENOM;
-        $_SESSION["listClient"] = modGetAllClients();
-        ctlHome();
-    }
-}
-
-
-function ctlGetContracts($idClient){
-    $contracts = modGetContracts($idClient);
-    return $contracts;
-}
-
-
-function ctlGetAccount($idClient){
-    $account = modGetAccounts($idClient);
-    return $account;
-}
-
-function ctlGetInfoEmploye($idEmploye) {
-    $employee = modGetEmployeFromId($idEmploye);
-    return $employee;
-}
-
-
-function ctlRDVDate($date) {
-    $date = ($date instanceof DateTime) ? $date : date_create($date);
-
-    $dateStart = $date->format('Y-m-d');
-    $dateStart .= ' 00:00:00';
-    $dateEnd = $date->format('Y-m-d');
-    $dateEnd .= ' 23:59:59';
-
-    $listRDV = modGetAllAppointmentsBetween($dateStart, $dateEnd);
-    $listTA = modGetAllTABetween($dateStart, $dateEnd);
-
-    $event = array_merge($listRDV, $listTA);
-    usort($event, function($a, $b) {
-        return $a->HORAIREDEBUT > $b->HORAIREDEBUT;
-    });
-    return $event;
-}
-
-*/

@@ -3,9 +3,6 @@
 require_once('controleur/controleur.php');
 require_once('modele/modele.php');
 require_once('vue/vue.php');
-if(session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 
 try {
@@ -299,18 +296,3 @@ catch(Exception $e) {
      $msg = $e->getMessage() ;
      ctlError($msg);
 }
-
-/*
-POUBELLE
-
-elseif (isset($_POST['GestionAccountOneBtn'])){
-        $idAccount = $_POST['idAccount'];
-        ctlGestionAccountOne($idAccount);
-    }
-
-elseif (isset($_POST["GestionContractOneBtn"])){
-        $idContract = $_POST['idContract'];
-        ctlGestionContractOne($idContract);
-    }
-
-*/

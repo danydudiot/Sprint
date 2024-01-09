@@ -1,9 +1,5 @@
 <?php
 
-if(session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 $colors = [
     "sunny-orange",
     "turquoise-cyan",
@@ -60,16 +56,16 @@ function vueDisplayHomeConseiller($events, $dateOfWeek, $username, $fullName){
     $listConseiller = array();
     // $weekEvents représente pour chaque entrée de 0 à 6, en chaîne de caractères, les eventHTML du jour correspondant
     foreach ($events as $event) {
-        if (!in_array("$event->IDENTITEEMPLOYE", $listConseiller)){
-            array_push($listConseiller, "$event->IDENTITEEMPLOYE", "$event->COLOR");
+        if (!in_array("$event->identiteemploye", $listConseiller)){
+            array_push($listConseiller, "$event->identiteemploye", "$event->color");
         }
-        if (isset($event->IDRDV)){
-            $appointmentDate = date_create_from_format("Y-m-d H:i:s", $event->HORAIREDEBUT);
+        if (isset($event->idrdv)){
+            $appointmentDate = date_create_from_format("Y-m-d H:i:s", $event->horairedebut);
             $weekNumber = date_format($appointmentDate, "N");
             $weekEvents[$weekNumber -1] .= vueGenerateAppointmentHTML($event);
         }
         else{
-            $TADate = date_create_from_format("Y-m-d H:i:s", $event->HORAIREDEBUT);
+            $TADate = date_create_from_format("Y-m-d H:i:s", $event->horairedebut);
             $weekNumber = date_format($TADate, "N");
             $weekEvents[$weekNumber -1] .= vueGenerateAdminHTML($event);
         }
@@ -92,25 +88,22 @@ function vueDisplayHomeAgent($events, $dateOfWeek, $username) {
     $listConseiller = array();
     // $weekEvents représente pour chaque entrée de 0 à 6, en chaîne de caractères, les eventHTML du jour correspondant
     foreach ($events as $event) {
-        if (!in_array("$event->IDENTITEEMPLOYE", $listConseiller)){
-            array_push($listConseiller, "$event->IDENTITEEMPLOYE", "$event->COLOR");
+        if (!in_array("$event->identiteemploye", $listConseiller)){
+            array_push($listConseiller, "$event->identiteemploye", "$event->color");
         }
-        if (isset($event->IDRDV)){
-            $appointmentDate = date_create_from_format("Y-m-d H:i:s", $event->HORAIREDEBUT);
+        if (isset($event->idrdv)){
+            $appointmentDate = date_create_from_format("Y-m-d H:i:s", $event->horairedebut);
             $weekNumber = date_format($appointmentDate, "N");
             $weekEvents[$weekNumber -1] .= vueGenerateAppointmentHTML($event);
         }
         else{
-            $TADate = date_create_from_format("Y-m-d H:i:s", $event->HORAIREDEBUT);
+            $TADate = date_create_from_format("Y-m-d H:i:s", $event->horairedebut);
             $weekNumber = date_format($TADate, "N");
             $weekEvents[$weekNumber -1] .= vueGenerateAdminHTML($event);
         }
     }
     $filterWrapper="";
     $filterWrapper = vueGenerateCalendarFilter($listConseiller);
-
-
-
     require_once('gabaritAgentHomePage.php');
 }
 
@@ -121,7 +114,7 @@ function vueDisplayHomeAgent($events, $dateOfWeek, $username) {
 function vueGenerateNavBar() {
     $dataList = '<input list="listClient" name="searchClientByIdField"  id="searchClientByIdField" class="searchField" placeholder="Id du client" required><datalist id="listClient">';
     foreach ($_SESSION["listClient"] as $client) {
-        $dataList .= '<option value="'.$client->IDCLIENT.'">'.$client->IDCLIENT.' - '.$client->NOM.' '.$client->PRENOM.' - '.$client->DATENAISSANCE.'</option>';
+        $dataList .= '<option value="'.$client->idclient.'">'.$client->idclient.' - '.$client->nom.' '.$client->prenom.' - '.$client->datenaissance.'</option>';
     }
     $dataList .= "</datalist>";
     $navbarHTML = 
@@ -199,11 +192,11 @@ function vueDisplayAdvanceSearchClient($listClient="") {
                         <div class="rechercheCell header">Date de Naissance</div>
                         <div class="rechercheCell header"></div>';
         foreach ($listClient as $client) {
-           $content .= '<div class="rechercheCell content">'.$client->idClient.'</div>
+            $content .= '<div class="rechercheCell content">'.$client->idclient.'</div>
                         <div class="rechercheCell content">'.$client->nom.'</div>
                         <div class="rechercheCell content">'.$client->prenom.'</div>
-                        <div class="rechercheCell content">'.$client->dateNaissance.'</div>
-                        <button class="rechercheCell content" type="submit" name="infoClientFromAdvancedBtn">Synthèse<input type="number" name="idClient" value='.$client->idClient.' class="hidden"></button>';
+                        <div class="rechercheCell content">'.$client->datenaissance.'</div>
+                        <button class="rechercheCell content" type="submit" name="infoClientFromAdvancedBtn">Synthèse<input type="number" name="idClient" value='.$client->idclient.' class="hidden"></button>';
         }
         $content .= '</div></form>';
     }
@@ -220,7 +213,7 @@ function vueDisplayCreateClient($listConseiller) {
     $navbar = vueGenerateNavBar();
     $optionSelect = '<label for="idEmployee" class="visually-hidden">Conseiller</label><select name="idEmployee" id="idEmployee" required>';
     foreach ($listConseiller as $conseiller) {
-        $optionSelect .='<option value="'.$conseiller->idEmploye.'">'.$conseiller->identiteEmploye.'</option>';
+        $optionSelect .='<option value="'.$conseiller->idemploye.'">'.$conseiller->identiteemploye.'</option>';
     }
     $optionSelect .= "</select>";
     $content = '<div class="clientCreationWrapper"> 
@@ -269,17 +262,16 @@ function vueDisplayCreateClient($listConseiller) {
 function vueDisplaySetting($identity) {
     global $colors;
     $titre = "Paramètres - Bank";
-    $navbar = vueGenerateNavBar();
-    $selectOptions = '';
+    $navbar = vueGenerateNavBar();    $selectOptions = '';
     foreach ($colors as $color) {
-        $selected = ($identity->COLOR == $color) ? "selected" : "";
+        $selected = ($identity->color == $color) ? "selected" : "";
         $selectOptions .= '<option value="'.$color.'"'.$selected.' class="'.$color.'-text">'.$color.'</option>';
     }
     $content='<div class="modInfoWrapper">
                 <form action="index.php" method="post" id="formPassword">
                     <h1>Modifier info personnel</h1>
                     <label for="loginEmployee"  class="visually-hidden">Login :</label>
-                    <input type="text" name="loginEmployee" id="loginEmployee" class="modInfoField" value="'.$identity->LOGIN.'" placeholder="Login" maxlength="32" required>
+                    <input type="text" name="loginEmployee" id="loginEmployee" class="modInfoField" value="'.$identity->login.'" placeholder="Login" maxlength="32" required>
                     <div class="loginFormFieldWrapper">
                         <label for="PasswordField" class="visually-hidden">Mot de Passe</label>
                         <input type="password" name="passwordEmployee" id="PasswordField" class="modInfoPasswordField" placeholder="Password" maxlength="128" required>
@@ -335,32 +327,31 @@ function vueGenerateGestionEmployeRow($employee) {
     global $colors;
     $selectOptions = "";
     foreach ($colors as $color) {
-        $selected = ($employee->COLOR == $color) ? "selected" : "";
+        $selected = ($employee->color == $color) ? "selected" : "";
         $selectOptions .= '<option value="'.$color.'" class="'.$color.'-text" '.$selected.'>'.$color.'</option>';
-    }
-
-    $etat1=$employee->IDCATEGORIE==1 ? "selected": "";
-    $etat2=$employee->IDCATEGORIE==2 ? "selected": "";
-    $etat3=$employee->IDCATEGORIE==3 ? "selected": "";
-    $row='<form action="index.php" method="post" class="employeTableContentWrapper" id="formPassword'.$employee->IDEMPLOYE.'">
-            <input  type="number" class="employeCell content" name="idEmployee" value="'.$employee->IDEMPLOYE.'" readonly="true">
+    }    
+    $etat1=$employee->idcategorie==1 ? "selected": "";
+    $etat2=$employee->idcategorie==2 ? "selected": "";
+    $etat3=$employee->idcategorie==3 ? "selected": "";
+    $row='<form action="index.php" method="post" class="employeTableContentWrapper" id="formPassword'.$employee->idemploye.'">
+            <input  type="number" class="employeCell content" name="idemployee" value="'.$employee->idemploye.'" readonly="true">
             <select name="idCategorie" class="employeCell content">
                 <option value="1" '.$etat1.' >Directeur</option>
                 <option value="2" '.$etat2.' >Conseiller</option>
                 <option value="3" '.$etat3.' >Agent d\'accueil</option>
             </select>
-            <input type="text" name="nameEmployee" class="employeCell content" value="'.$employee->NOM.'" maxlength="32">
-            <input type="text" name="firstNameEmployee" class="employeCell content" value="'.$employee->PRENOM.'" maxlength="32">
-            <input type="text" name="loginEmployee" class="employeCell content" value="'.$employee->LOGIN.'" maxlength="32">
+            <input type="text" name="nameEmployee" class="employeCell content" value="'.$employee->nom.'" maxlength="32">
+            <input type="text" name="firstNameEmployee" class="employeCell content" value="'.$employee->prenom.'" maxlength="32">
+            <input type="text" name="loginEmployee" class="employeCell content" value="'.$employee->login.'" maxlength="32">
             <div class="employeCell content">
-            <input type="password" name="passwordEmployee" id="PasswordField'.$employee->IDEMPLOYE.'" class="loginFormField" maxlength="128">
-            <button onclick="togglePasswordVisibility(\''.$employee->IDEMPLOYE.'\')" type="button" class="visibilityButton"><i class="fa-solid fa-eye" id="visibilityIcon'.$employee->IDEMPLOYE.'"></i></button>
+            <input type="password" name="passwordEmployee" id="PasswordField'.$employee->idemploye.'" class="loginFormField" maxlength="128">
+            <button onclick="togglePasswordVisibility(\''.$employee->idemploye.'\')" type="button" class="visibilityButton"><i class="fa-solid fa-eye" id="visibilityIcon'.$employee->idemploye.'"></i></button>
             </div>
             <select name="colorEmployee" class="employeCell content">
             '.$selectOptions.'
             </select>
-            <input type="text" name="old" class="hidden" value="'.$employee->LOGIN.'">
-            <input type="submit" name="ModifPersonnelOneBtn" id="connectBtn'.$employee->IDEMPLOYE.'" class="employeBtn" value="Valider les modifications">
+            <input type="text" name="old" class="hidden" value="'.$employee->login.'">
+            <input type="submit" name="ModifPersonnelOneBtn" id="connectBtn'.$employee->idemploye.'" class="employeBtn" value="Valider les modifications">
             <button type="submit" name="GestionPersonnelDeleteBtn" class="employeBtn red"><i class="fa-solid fa-trash-can"></i> Supprimer</button>
         </form>';
     return $row;
@@ -429,14 +420,13 @@ function vueDisplayGestionServicesAll($listTypeAccount, $listTypeContract) {
                             <div></div>
                             <div></div>
                         </div>';
-    foreach ($listTypeAccount as $typeAccount) {
-        $actif = ($typeAccount->ACTIF == 1) ? "checked" : "";
+    foreach ($listTypeAccount as $typeAccount) {        $actif = ($typeAccount->actif == 1) ? "checked" : "";
         $content .= '<form action="index.php" method="post" class="gestionServiceTableContentWrapper">
-                        <input type="text" name="idAccount" class="gestionServiceCell content" value="'.$typeAccount->IDTYPECOMPTE.'" readonly="true">
-                        <input type="text" name="nameAccount" class="gestionServiceCell content" value="'.$typeAccount->NOM.'" maxlength="64">
+                        <input type="text" name="idAccount" class="gestionServiceCell content" value="'.$typeAccount->idtypecompte.'" readonly="true">
+                        <input type="text" name="nameAccount" class="gestionServiceCell content" value="'.$typeAccount->nom.'" maxlength="64">
                         <div class="gestionServiceCell content"><input type="checkbox" name="activeAccount" class="gestionServiceCell content" '.$actif.'></div>
-                        <input type="text" name="documentAccount" class="gestionServiceCell content" value="'.$typeAccount->DOCUMENT.'" maxlength="128">
-                        <input type="hidden" name="idMotif" value="'.$typeAccount->IDMOTIF.'" class="gestionPersonnelAddInput">
+                        <input type="text" name="documentAccount" class="gestionServiceCell content" value="'.$typeAccount->document.'" maxlength="128">
+                        <input type="hidden" name="idMotif" value="'.$typeAccount->idmotif.'" class="gestionPersonnelAddInput">
                         <button type="submit" name="ModifAccountOneBtn" class="employeBtn">
                         <i class="fa-solid fa-pen-to-square"></i> Modifier le type de compte
                         </button>
@@ -457,14 +447,13 @@ function vueDisplayGestionServicesAll($listTypeAccount, $listTypeContract) {
                         <div></div>
                     </div>';
 
-    foreach ($listTypeContract as $typeContract) {
-        $actif = ($typeContract->ACTIF == 1) ? "checked" : "";
+    foreach ($listTypeContract as $typeContract) {        $actif = ($typeContract->actif == 1) ? "checked" : "";
         $content .= '<form action="index.php" method="post" class="gestionServiceTableContentWrapper">
-                        <input type="text" name="idContract" class="gestionServiceCell content" value="'.$typeContract->IDTYPECONTRAT.'" readonly="true">
-                        <input type="text" name="nameContract" class="gestionServiceCell content" value="'.$typeContract->NOM.'" maxlength="64">
+                        <input type="text" name="idContract" class="gestionServiceCell content" value="'.$typeContract->idtypecontrat.'" readonly="true">
+                        <input type="text" name="nameContract" class="gestionServiceCell content" value="'.$typeContract->nom.'" maxlength="64">
                         <div class="gestionServiceCell content"><input type="checkbox" name="activeContract" class="gestionServiceCell content" '.$actif.'></div>
-                        <input type="text" name="documentContract" class="gestionServiceCell content" value="'.$typeContract->DOCUMENT.'" maxlength="128">
-                        <input type="hidden" name="idMotif" value="'.$typeContract->IDMOTIF.'" class="gestionPersonnelAddInput">
+                        <input type="text" name="documentContract" class="gestionServiceCell content" value="'.$typeContract->document.'" maxlength="128">
+                        <input type="hidden" name="idMotif" value="'.$typeContract->idmotif.'" class="gestionPersonnelAddInput">
                         <button type="submit" name="ModifContractOneBtn" class="employeBtn">
                         <i class="fa-solid fa-pen-to-square"></i> Modifier le type de contrat
                         </button>
@@ -528,24 +517,24 @@ function vueDisplayGestionServicesAdd(){
 function vueDisplayInfoClient($client, $listAccounts, $listContract, $listOperationsAccount, $listRDVClients, $listConseiller){
     $navbar = vueGenerateNavBar();
     $events = vueAppointmentClient($listRDVClients);
-    $listC = vueCreateListContract($listContract, $client->IDCLIENT);
-    list($listA, $optionSelect, $typeClass) = vueCreateListAccount($listAccounts, $client->IDCLIENT);
+    $listC = vueCreateListContract($listContract, $client->idclient);
+    list($listA, $optionSelect, $typeClass) = vueCreateListAccount($listAccounts, $client->idclient);
     list($filtersBtn, $operationDisplay) = vueGenerateOperation($listAccounts, $listOperationsAccount);
-    list($createAccount, $createContract) = vueGenerateButtonCreate($client->IDCLIENT);
+    list($createAccount, $createContract) = vueGenerateButtonCreate($client->idclient);
 
     // pour faire la synthèse
-    $idClient = $client->IDCLIENT;
-    $nameConseiller = vueGenerateSelectEmployee($listConseiller, $client->IDEMPLOYE);
-    $nameClient = $client->NOM;
-    $naissance = $client->DATENAISSANCE;
-    $creation = $client->DATECREATION;
-    $firstNameClient = $client->PRENOM;
-    $addressClient = $client->ADRESSE;
-    $phoneClient = $client->NUMTEL;
-    $emailClient = $client->EMAIL;
-    $profession = $client->PROFESSION;
-    $situation = $client->SITUATIONFAMILIALE;
-    $civi = $client->CIVILITEE;
+    $idClient = $client->idclient;
+    $nameConseiller = vueGenerateSelectEmployee($listConseiller, $client->idemploye);
+    $nameClient = $client->nom;
+    $naissance = $client->datenaissance;
+    $creation = $client->datecreation;
+    $firstNameClient = $client->prenom;
+    $addressClient = $client->adresse;
+    $phoneClient = $client->numtel;
+    $emailClient = $client->email;
+    $profession = $client->profession;
+    $situation = $client->situationfamiliale;
+    $civi = $client->civilitee;
     require_once('gabaritInfoClient.php');
 }
 
@@ -556,10 +545,10 @@ function vueDisplayInfoClient($client, $listAccounts, $listContract, $listOperat
  * @return string Le code HTML du select
  */
 function vueGenerateSelectEmployee($listConseiller, $idConseiller){
-    $optionSelect = '<select name="idConseiller" id="idEmployee" class="contactCell content" required>';
+    $optionSelect = '<select name="idConseiller" id="idemployee" class="contactCell content" required>';
     foreach ($listConseiller as $conseiller) {
-        $selected = ($conseiller->idEmploye == $idConseiller) ? "selected" : "";
-        $optionSelect .= '<option value="'.$conseiller->idEmploye.'" '.$selected.'>'.$conseiller->identiteEmploye.'</option>';
+        $selected = ($conseiller->idemploye == $idConseiller) ? "selected" : "";
+        $optionSelect .= '<option value="'.$conseiller->idemploye.'" '.$selected.'>'.$conseiller->identiteemploye.'</option>';
     }
     $optionSelect .= "</select>";
     return $optionSelect;
@@ -588,12 +577,12 @@ function vueAppointmentClient($listRDVClients){
 function vueCreateListContract($listContract, $idClient){
     $listC = ($_SESSION["type"] == 2) ? '<div class="accountCell header">Suppression</div>' : '';
     foreach ($listContract as $contract) {
-        $listC .= '<div class="contractCell content">'.$contract->NOM.'</div>
+        $listC .= '<div class="contractCell content">'.$contract->nom.'</div>
             <div class="contractCell content">'.$contract->tarifmensuel.'€</div>';
         if ($_SESSION["type"] == 2) {
             $listC.='<div class="contractCell content">
                         <form action="index.php" method="post">
-                            <input type="hidden" name="idContract" value="'.$contract->idContrat.'">
+                            <input type="hidden" name="idContract" value="'.$contract->idcontrat.'">
                             <input type="hidden" name="idClient" value="'.$idClient.'">
                             <button type="submit" name="deleteContractBtn" class="suppContract">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -626,12 +615,12 @@ function vueCreateListAccount($listAccounts, $idClient){
     }
     
     foreach ($listAccounts as $account) {
-        $optionSelect .= "<option value=\"".$account->idCompte."\">".$account->NOM.': '. $account->solde ."€</option>";
-        $listA .= '<div class="accountCell content">'.$account->NOM.'</div>
+        $optionSelect .= "<option value=\"".$account->idcompte."\">".$account->nom.': '. $account->solde ."€</option>";
+        $listA .= '<div class="accountCell content">'.$account->nom.'</div>
             <div class="accountCell content">'.$account->solde.'€</div>
             <form action="index.php" method="post" class="accountCell content">
                 <input type="number" name="overdraft" value="'.$account->decouvert.'" step="0.01" min="0" max="99999999999.99">
-                <input type="hidden" name="idAccount" value="'.$account->idCompte.'">
+                <input type="hidden" name="idAccount" value="'.$account->idcompte.'">
                 <input type="hidden" name="idClient" value="'.$idClient.'">
                 <button type="submit" name="modifOverdraftBtn">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -641,7 +630,7 @@ function vueCreateListAccount($listAccounts, $idClient){
         if ($_SESSION["type"] == 2) {
             $listA.='
             <form action="index.php" method="post" class="accountCell content">
-                <input type="hidden" name="idAccount" value="'.$account->idCompte.'">
+                <input type="hidden" name="idAccount" value="'.$account->idcompte.'">
                 <input type="hidden" name="idClient" value="'.$idClient.'">
                 <button type="submit" name="deleteAccountBtn" class="red">
                     <i class="fa-solid fa-trash-can"></i>
@@ -664,8 +653,8 @@ function vueGenerateOperation($listAccounts, $listOperationsAccount){
     $operationDisplay = "";
     foreach ($listAccounts as $account) {
         $filtersBtn .= vueGenerateAccountFilterBtnHTML($account);
-        $operationDisplay .= '<div class="operationsListWrapper hidden" id="account'. $account->idCompte .'">';
-        $listOperations = $listOperationsAccount["$account->idCompte"];
+        $operationDisplay .= '<div class="operationsListWrapper hidden" id="account'. $account->idcompte .'">';
+        $listOperations = $listOperationsAccount["$account->idcompte"];
         // Pour afficher les opérations dans l'ordre chronologique inverse
         $operationsHTML = "";
         foreach ($listOperations as $operation) {
@@ -683,9 +672,9 @@ function vueGenerateOperation($listAccounts, $listOperationsAccount){
  * @return string Le code HTML du bouton de filtre
  */
 function vueGenerateAccountFilterBtnHTML ($account) {
-    return '<button class="filterBtn lush-green inactive" id="btn'.$account->idCompte.'" data-id="'.$account->idCompte.'" onclick="toggleFilter(this)">
+    return '<button class="filterBtn lush-green inactive" id="btn'.$account->idcompte.'" data-id="'.$account->idcompte.'" onclick="toggleFilter(this)">
                 <i class="fa-regular fa-circle"></i>'.
-                $account->NOM.': '.$account->solde.'€'. 
+                $account->nom.': '.$account->solde.'€'. 
             '</button>';
 }
 
@@ -695,16 +684,16 @@ function vueGenerateAccountFilterBtnHTML ($account) {
  * @return string Le code HTML de l'opération
  */
 function vueGenerateAccountOperationHTML ($operation) {
-    $sign = ($operation->ISCREDIT == 0) ? "minus red" : "plus green";
+    $sign = ($operation->iscredit == 0) ? "minus red" : "plus green";
     $operationHTML ='<div class="operationCard">
                         <div>
-                            <h2>'.$operation->LIBELLE.':</h2>
+                            <h2>'.$operation->libelle.':</h2>
                             <span class="number">
                                 <i class="fa-solid fa-'.$sign.'"></i>
-                                '.$operation->MONTANT.'€
+                                '.$operation->montant.'€
                             </span>
                         </div>
-                        <span class="date">'.$operation->DATEOPERATION.'</span>
+                        <span class="date">'.$operation->dateoperation.'</span>
                     </div>';
     return $operationHTML;
 }
@@ -760,13 +749,11 @@ function vueDisplayAddContract($idClient, $listTypeContract, $listeClient){
         require_once('gabaritGestion.php');
     }
     foreach ($listTypeContract as $typeContract) {
-        $optionSelect .= '<option value="'.$typeContract->IDTYPECONTRAT.'">'.$typeContract->NOM.'</option>';
+        $optionSelect .= '<option value="'.$typeContract->idtypecontrat.'">'.$typeContract->nom.'</option>';
     }
-    $optionSelect .= '</select>';
-
-    $datalist = '<div class="addContractField"><label for="idClient2">Bénéficiaire n°2</label><input list="listClient" name="idClient2"><datalist id="listClient">';
+    $optionSelect .= '</select>';    $datalist = '<div class="addContractField"><label for="idClient2">Bénéficiaire n°2</label><input list="listClient" name="idClient2"><datalist id="listClient">';
     foreach ($listeClient as $client) {
-        $datalist .= '<option value="'.$client->IDCLIENT.'">'.$client->IDCLIENT.' '.$client->NOM.' '.$client->PRENOM.'</option>';
+        $datalist .= '<option value="'.$client->idclient.'">'.$client->idclient.' '.$client->nom.' '.$client->prenom.'</option>';
     }
     $datalist .= '</datalist></div>';
 
@@ -799,13 +786,11 @@ function vueDisplayAddAccount($idClient, $listTypeAccount, $listeClient){
 
     $optionSelect = '<select name="idTypeAccount" class="addContractField">';
     foreach ($listTypeAccount as $typeAccount) {
-        $optionSelect .= '<option value="'.$typeAccount->IDTYPECOMPTE.'">'.$typeAccount->NOM.'</option>';
+        $optionSelect .= '<option value="'.$typeAccount->idtypecompte.'">'.$typeAccount->nom.'</option>';
     }
-    $optionSelect .= "</select>";
-
-    $dataList = '<div class="addContractField"><label for="idClient2">Bénéficiaire n°2</label><input list="listClient" name="idClient2" ><datalist id="listClient">';
+    $optionSelect .= "</select>";    $dataList = '<div class="addContractField"><label for="idClient2">Bénéficiaire n°2</label><input list="listClient" name="idClient2" ><datalist id="listClient">';
     foreach ($listeClient as $client) {
-        $dataList .= '<option value="'.$client->IDCLIENT.'">'.$client->IDCLIENT.' '.$client->NOM.' '.$client->PRENOM.'</option>';
+        $dataList .= '<option value="'.$client->idclient.'">'.$client->idclient.' '.$client->nom.' '.$client->prenom.'</option>';
     }
     $dataList .= "</datalist></div>";
 
@@ -833,32 +818,32 @@ function vueDisplayAddAccount($idClient, $listTypeAccount, $listeClient){
  * @return string Le code HTML de l'event
  */
 function vueGenerateAppointmentHTML($appointment) {
-    $heureDebut = (substr($appointment->HORAIREDEBUT, 11, 5));
-    $heureFin = (substr($appointment->HORAIREFIN, 11, 5)); 
-    return '<div class="event" data-conseiller="'. $appointment->IDENTITEEMPLOYE .'" data-color="'. $appointment->COLOR .'">
+    $heureDebut = (substr($appointment->horairedebut, 11, 5));
+    $heureFin = (substr($appointment->horairefin, 11, 5)); 
+    return '<div class="event" data-conseiller="'. $appointment->identiteemploye .'" data-color="'. $appointment->color .'">
         <div class="eventTitleCard">
-            <h2>'. $appointment->INTITULE .'</h2>
+            <h2>'. $appointment->intitule .'</h2>
             <i class="fa-solid fa-users"></i>
         </div>
         <form action="index.php" method="post">
-            <input type="number" name="searchClientByIdField" id="searchClientByIdField" class="hidden" value="'.$appointment->IDCLIENT.'">
-            <input type="submit" name="searchClientBtn" value="'. $appointment->identiteClient .'" class="eventClientInput">
+            <input type="number" name="searchClientByIdField" id="searchClientByIdField" class="hidden" value="'.$appointment->idclient.'">
+            <input type="submit" name="searchClientBtn" value="'. $appointment->identiteclient .'" class="eventClientInput">
         </form>
         <p class="document">
-            Documents a apporter: '.$appointment->DOCUMENT.'
+            Documents a apporter: '.$appointment->document.'
         </p>
         <div class="eventDetails">
             <div>
                 <p class="eventStartTime">'. $heureDebut .'</p>
                 <p class="eventEndTime">'. $heureFin .'</p>
             </div>
-            <div class="eventConseiller '.$appointment->COLOR.'">
+            <div class="eventConseiller '.$appointment->color.'">
                 <i class="fa-solid fa-user-tie"></i>
-                '. $appointment->IDENTITEEMPLOYE .'
+                '. $appointment->identiteemploye .'
             </div>
         </div>
         <form action="index.php" method="post" class="deleteForm">
-            <input type="number" name="idRDVField" id="idRDVField" class="hidden" value="'.$appointment->IDRDV.'">
+            <input type="number" name="idRDVField" id="idRDVField" class="hidden" value="'.$appointment->idrdv.'">
             <button type="submit" class="deleteRDVBtn" name="deleteRDVBtn">
                 <i class="fa-solid fa-trash-can"></i> Supprimer
             </button>
@@ -872,11 +857,11 @@ function vueGenerateAppointmentHTML($appointment) {
  * @return string Le code HTML de l'event
  */
 function vueGenerateAdminHTML($TA) {
-    $heureDebut = (substr($TA->HORAIREDEBUT, 11, 5));
-    $heureFin = (substr($TA->HORAIREFIN, 11, 5));
-    return '<div class="event" data-conseiller="'. $TA->IDENTITEEMPLOYE .'" data-color="'. $TA->COLOR .'">
+    $heureDebut = (substr($TA->horairedebut, 11, 5));
+    $heureFin = (substr($TA->horairefin, 11, 5));
+    return '<div class="event" data-conseiller="'. $TA->identiteemploye .'" data-color="'. $TA->color .'">
         <div class="eventTitleCard">
-            <h2>'. $TA->LIBELLE .'</h2>
+            <h2>'. $TA->libelle .'</h2>
             <i class="fa-solid fa-user-lock"></i>
         </div>
         <div class="eventDetails">
@@ -884,13 +869,13 @@ function vueGenerateAdminHTML($TA) {
                 <p class="eventStartTime">'. $heureDebut .'</p>
                 <p class="eventEndTime">'. $heureFin .'</p>
             </div>
-            <div class="eventConseiller '.$TA->COLOR.'">
+            <div class="eventConseiller '.$TA->color.'">
                 <i class="fa-solid fa-user-tie"></i>
-                '. $TA->IDENTITEEMPLOYE .'
+                '. $TA->identiteemploye .'
             </div>
         </div>
         <form action="index.php" method="post" class="deleteForm">
-        <input type="number" name="idTAField" id="idTAField" class="hidden" value="'.$TA->IDTA.'">
+        <input type="number" name="idTAField" id="idTAField" class="hidden" value="'.$TA->idta.'">
         <button type="submit" class="deleteRDVBtn" name="deleteTABtn">
             <i class="fa-solid fa-trash-can"></i> Supprimer
         </button>
@@ -931,22 +916,21 @@ function vueDisplayAddAppointment($listConseillers, $listClients, $listMotifs, $
     $motifsOption = "";
     $eventsHTML = "";
     foreach ($events as $event) {
-        if (isset($event->IDRDV)){
+        if (isset($event->idrdv)){
             $eventsHTML .= vueGenerateAppointmentHTML($event);
         }
         else{
             $eventsHTML .= vueGenerateAdminHTML($event);
         }
-    }
-    foreach ($listConseillers as $conseiller) {
-        $conseillersOption .= '<option value="'.$conseiller->idEmploye.'">'.$conseiller->identiteEmploye.'</option>';
+    }    foreach ($listConseillers as $conseiller) {
+        $conseillersOption .= '<option value="'.$conseiller->idemploye.'">'.$conseiller->identiteemploye.'</option>';
     }
     foreach ($listMotifs as $motif) {
-        $motifsOption .= '<option value="'.$motif->IDMOTIF.'">'.$motif->INTITULE.'</option>';
+        $motifsOption .= '<option value="'.$motif->idmotif.'">'.$motif->intitule.'</option>';
     }
     $datalist = '<input list="listClient" name="appointmentsClientField" class="field" placeholder="Id du client" id="appointmentsClientField" onChange="changeConseiller(this)" required><datalist id="listClient">';
     foreach ($_SESSION["listClient"] as $client) {
-        $datalist .= '<option value="'.$client->IDCLIENT.'" data-conseiller="'.$client->IDEMPLOYE.'" id="'.$client->IDCLIENT.'">'.$client->IDCLIENT.' - '.$client->NOM.' '.$client->PRENOM.' - '.$client->DATENAISSANCE.'</option>';
+        $datalist .= '<option value="'.$client->idclient.'" data-conseiller="'.$client->idemploye.'" id="'.$client->idclient.'">'.$client->idclient.' - '.$client->nom.' '.$client->prenom.' - '.$client->datenaissance.'</option>';
     }
     $datalist .= "</datalist>";
     $content = '
@@ -1003,7 +987,7 @@ function vueDisplayAddAppointmentConseiller($listClients, $listMotifs, $date, $e
     $motifsOption = "";
     $eventsHTML = "";
     foreach ($events as $event) {
-        if (isset($event->IDRDV)){
+        if (isset($event->idrdv)){
             $eventsHTML .= vueGenerateAppointmentHTML($event);
         }
         else{
@@ -1011,11 +995,11 @@ function vueDisplayAddAppointmentConseiller($listClients, $listMotifs, $date, $e
         }
     }
     foreach ($listMotifs as $motif) {
-        $motifsOption .= '<option value="'.$motif->IDMOTIF.'">'.$motif->INTITULE.'</option>';
+        $motifsOption .= '<option value="'.$motif->idmotif.'">'.$motif->intitule.'</option>';
     }
     $datalist = '<input list="listClient" name="appointmentsClientField" class="field appointment" placeholder="Id du client" id="appointmentsClientField" onChange="changeConseiller(this)" required><datalist id="listClient">';
     foreach ($_SESSION["listClient"] as $client) {
-        $datalist .= '<option value="'.$client->IDCLIENT.'" data-conseiller="'.$client->IDEMPLOYE.'" id="'.$client->IDCLIENT.'">'.$client->IDCLIENT.' - '.$client->NOM.' '.$client->PRENOM.' - '.$client->DATENAISSANCE.'</option>';
+        $datalist .= '<option value="'.$client->idclient.'" data-conseiller="'.$client->idemploye.'" id="'.$client->idclient.'">'.$client->idclient.' - '.$client->nom.' '.$client->prenom.' - '.$client->datenaissance.'</option>';
     }
     $datalist .= "</datalist>";
     $content = '
@@ -1062,178 +1046,3 @@ function vueDisplayAddAppointmentConseiller($listClients, $listMotifs, $date, $e
             </div>';
     require_once('gabaritGestion.php');
 }
-
-
-/*
-POUBELLE
-
-function vueDisplayGestionAccountOne($account) {
-    $navbar = vueGenerateNavBar();
-    $etat=$account->ACTIF==1 ? "checked": "";
-    $content='<form action="index.php" method="post" class="gestionPersonnelAddForm">
-                <div>
-                    <h1>Modifier info type compte</h1>
-                    <input type="text" name="nameAccount" value="'.$account->NOM.'" class="gestionPersonnelAddInput">
-                    <input type="text" name="documentAccount" value="'.$account->DOCUMENT.'" class="gestionPersonnelAddInput">
-                    <div class="gestionPersonnelAddInput">
-                        <label for="activeAccount">Activé:</label>
-                        <input type="checkbox" name="activeAccount" id="activeAccount" '.$etat.'>
-                    </div>
-                    <input type="hidden" name="idAccount" value="'.$account->IDTYPECOMPTE.' "class="gestionPersonnelAddInput">
-                    <input type="hidden" name="idMotif" value="'.$account->IDMOTIF.'" class="gestionPersonnelAddInput">
-                    <input type="submit" name="ModifAccountOneBtn" value="Valider modification" class="gestionPersonnelAddInput">
-                </div>
-            </form>';
-    require_once('gabaritGestion.php');
-}
-
-function vueDisplayGestionContractOne($contract) {
-    $navbar = vueGenerateNavBar();
-    $etat=$contract->ACTIF==1 ? "checked": "";
-    $content='<form action="index.php" method="post" class="gestionPersonnelAddForm">
-                <div>
-                    <h1>Modifier info type Contrat</h1>
-                    <input type="text" name="nameAccount" value="'.$contract->NOM.'" class="gestionPersonnelAddInput">
-                    <input type="text" name="documentAccount" value="'.$contract->DOCUMENT.'" class="gestionPersonnelAddInput">
-                    <div class="gestionPersonnelAddInput">
-                        <label for="activeAccount">Activé:</label>
-                        <input type="checkbox" name="activeAccount" id="activeAccount" '.$etat.'>
-                    </div>
-                    <input type="hidden" name="idAccount" value="'.$contract->IDTYPECONTRAT.' "class="gestionPersonnelAddInput">
-                    <input type="hidden" name="idMotif" value="'.$contract->IDMOTIF.'" class="gestionPersonnelAddInput">
-                    <input type="submit" name="ModifAccountOneBtn" value="Valider modification" class="gestionPersonnelAddInput">
-                </div>
-            </form>';
-    require_once('gabaritGestion.php');
-}
-
-function vueDisplayAgendaConseiller($appointment, $admin){
-    $navbar = vueGenerateNavBar();
-    $bla = json_encode($appointment);
-    echo json_encode($admin);
-    require_once('gabaritAgentHomePage.php');
-}
-
-*/
-
-/*
-ANCIENNE VERSION
-
-function vueDisplayInfoClient($client, $listAccounts, $listContract, $listOperationsAccount, $listRDVClients){
-    $navbar = vueGenerateNavBar();
-    // pour faire le select pour le débit / crédit
-    $optionSelect = "";
-    $events = "";
-    // pour faire la liste des comptes
-    if ($_SESSION["type"] == 2) {
-        $listA = '<div class="accountCell header">Suppression</div>';
-        $typeClass = 'conseiller';
-    }
-    else{
-        $listA = '';
-        $typeClass = 'agent';
-    }
-    foreach ($listRDVClients as $appointments) {
-        $events .= vueGenerateAppointmentHTML($appointments);
-    }
-    $events .= ($events == "") ? '<p style="margin-left:1em;">Pas de rendez-vous.</p>' : "";
-    foreach ($listAccounts as $account) {
-        $optionSelect .= "<option value=\"".$account->idCompte."\">".$account->NOM.': '. $account->solde ."€</option>";
-        $listA .= '<div class="accountCell content">'.$account->NOM.'</div>
-            <div class="accountCell content">'.$account->solde.'€</div>
-            <form action="index.php" method="post" class="accountCell content">
-                <input type="number" name="overdraft" value="'.$account->decouvert.'" step="0.01">
-                <input type="hidden" name="idAccount" value="'.$account->idCompte.'">
-                <button type="submit" name="modifOverdraftBtn">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    Modifier le découvert
-                </button>
-            </form>';
-        if ($_SESSION["type"] == 2) {
-            $listA.='
-            <form action="index.php" method="post" class="accountCell content">
-                <input type="hidden" name="idAccount" value="'.$account->idCompte.'">
-                <button type="submit" name="deleteAccountBtn" class="red">
-                    <i class="fa-solid fa-trash-can"></i>
-                    Supprimer le compte
-                </button>
-            </form>';
-        }
-    }  
-    // pour faire la liste des contrats
-    $listC="";
-    $listC .= ($_SESSION["type"] == 2) ? '<div class="accountCell header">Supression</div>' : '';
-    foreach ($listContract as $contract) {
-        $listC .= '<div class="contractCell content">'.$contract->NOM.'</div>
-            <div class="contractCell content">'.$contract->tarifmensuel.'€</div>';
-        if ($_SESSION["type"] == 2) {
-            $listC.='<div class="contractCell content">
-                        <form action="index.php" method="post">
-                            <input type="hidden" name="idContract" value="'.$contract->idContrat.'">
-                            <input type="submit" value="Supprimer le contrat" name="deleteContractBtn">
-                        </form>
-                    </div>';
-        }
-        $listC .= '</div>';
-    }
-
-    // pour faire la synthèse
-    $idClient = $client->IDCLIENT;
-    $nameConseiller = $client->NOMCONSEILLER." ".$client->PRENOMCONSEILLER;
-    $nameClient = $client->NOM;
-    $naissance = $client->DATENAISSANCE;
-    $creation = $client->DATECREATION;
-    $firstNameClient = $client->PRENOM;
-    $addressClient = $client->ADRESSE;
-    $phoneClient = $client->NUMTEL;
-    $emailClient = $client->EMAIL;
-    $profession = $client->PROFESSION;
-    $situation = $client->SITUATIONFAMILIALE;
-    $civi = $client->CIVILITEE;
-
-    //Pour l'afficher des comptes avec les opérations
-    $filterBtns = "";
-    $operationDisplay = "";
-    foreach ($listAccounts as $account) {
-        $filterBtns .= vueGenerateAccountFilterBtnHTML($account);
-        $operationDisplay .= '<div class="operationsListWrapper hidden" id="account'. $account->idCompte .'">';
-        $listOperations = $listOperationsAccount["$account->idCompte"];
-        // Pour afficher les opérations dans l'ordre chronologique inverse
-        $operationsHTML = "";
-        foreach ($listOperations as $operation) {
-            $operationsHTML = vueGenerateAccountOperationHTML($operation) . $operationsHTML;
-        }
-        
-        $operationDisplay .= $operationsHTML. "</div>";
-    }
-    if ($_SESSION["type"] == 2) {
-        $createAccount='<div>
-                            <form action="index.php" method="post">
-                                <input type="hidden" name="idClient" value="'.$idClient.'">
-                                <div class="btnWrapper">
-                                    <button type="submit" name="addAccountBtn" class="btn">
-                                        <i class="fa-solid fa-plus"></i> Ajouter un compte
-                                    </button>
-                                </div>
-                            </form>
-                        </div>';
-        $createContract = '<div>
-                                <form action="index.php" method="post">
-                                    <input type="hidden" name="idClient" value="'.$idClient.'">
-                                    <div class="btnWrapper">
-                                        <button type="submit" name="addContractBtn" class="btn">
-                                            <i class="fa-solid fa-plus"></i> Ajouter un contrat
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>';
-    }
-    else {
-        $createAccount="";
-        $createContract="";
-    }
-
-    require_once('gabaritInfoClient.php');
-}
-
-*/

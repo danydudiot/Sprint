@@ -1,5 +1,5 @@
 <?php
-    define("SERVEUR","localhost");
-    define("USER","root");
-    define("PASSWORD","");
-    define("BDD","Sprint");
+    define("SERVEUR","db");
+    define("USER","sprintuser");
+    define("PASSWORD","sprintpassword");
+    define("BDD","sprint");

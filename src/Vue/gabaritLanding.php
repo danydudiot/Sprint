@@ -31,6 +31,14 @@
             </button>
         </div>
     </div>
+    <div>
+        <ul>
+            <li>(Poste) Login - Password</li>
+            <li>(Directeur) Lovelace - 123</li>
+            <li>(Conseiller) Alan - 123</li>
+            <li>(Agent d’accueil) Charles - 123</li>
+        </ul>
+    </div>
 </div>
 </body>
 </html>
